@@ -18,6 +18,7 @@ public class Runner {
 		// improperly formatted inputs
 		if (args.length < 2 || args.length > 5) {
 			r.printUsage();
+			System.exit(0);
 		}
 
 		// only 2 arguments
@@ -28,14 +29,18 @@ public class Runner {
 		}
 
 		// just csv file output
-		else if (args.length == 3 && args[(args.length - 1)].equals("c")) {
+		else if (args.length == 3 && args[(args.length - 1)].equals("-c")) {
+			r.loadData(args[0], args[1]);
 			r.csvOutput();
 		}
 
 		// top N output to screen
-		else if (args.length == 4 && args[2].equals("-top")) {
+		else if (args.length == 4 && args[2].equals("--top")) {
 			try {
-				r.topN(Integer.parseInt(args[3]));
+				r.loadData(args[0], args[1]);
+				// r.screenOutput(r.topN(Integer.parseInt(args[3])));
+				r.screenOutput(r.topN(Integer.parseInt(args[3])));
+				// r.sort();
 			} catch (Exception e) {
 				System.out.println("The input is improperly formatted");
 				r.printUsage();
@@ -46,9 +51,11 @@ public class Runner {
 		}
 
 		// top N output to csv file
-		else if (args.length == 5 && args[2].equals("-top") && args[(args.length - 1)].equals("c")) {
+		else if (args.length == 5 && args[2].equals("--top") && args[(args.length - 1)].equals("-c")) {
 			try {
-				r.topN(Integer.parseInt(args[3]));
+				r.loadData(args[0], args[1]);
+				r.topNCSVOutput(Integer.parseInt(args[3]));
+
 			} catch (Exception e) {
 				System.out.println("The input is improperly formatted, the problem seems at: " + e.getMessage());
 				r.printUsage();
@@ -57,6 +64,9 @@ public class Runner {
 				System.exit(0);
 			}
 			r.csvOutput();
+		} else {
+			r.printUsage();
+			System.exit(0);
 		}
 
 	}

@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.egnyte.utils.auditreporter.csvtools.CSVWriter;
+
 public class AuditReporter {
 
 	private List<List<String>> users;
@@ -16,6 +18,8 @@ public class AuditReporter {
 	private static final String COMMA_DELIMITER = ",";
 	private static final String NEW_LINE_SEPARATOR = "\n";
 
+	private static final int variableNumber = 3;
+
 	// loads the data, largely untouched except to modify the file location for
 	// the resources for maven
 	protected void loadData(String userFn, String filesFn) throws IOException {
@@ -23,8 +27,13 @@ public class AuditReporter {
 
 		BufferedReader reader = null;
 		try {
-			reader = new BufferedReader(new FileReader(this.getClass().getClassLoader().getResource(userFn).getFile()));
-			// reader = new BufferedReader(new FileReader(userFn));
+			// THIS CODE ALLOWS MAVEN TO READ FROM RESOURCES FOLDER
+			// AUTOMATICALLY
+			// DISABLE IT FOR JAR CREATION
+
+			// reader = new BufferedReader(new
+			// FileReader(this.getClass().getClassLoader().getResource(userFn).getFile()));
+			reader = new BufferedReader(new FileReader(userFn));
 			users = new ArrayList<List<String>>();
 
 			reader.readLine(); // skip header
@@ -40,8 +49,13 @@ public class AuditReporter {
 
 		reader = null;
 		try {
-			reader = new BufferedReader(
-					new FileReader(this.getClass().getClassLoader().getResource(filesFn).getFile()));
+			// THIS CODE ALLOWS MAVEN TO READ FROM RESOURCES FOLDER
+			// AUTOMATICALLY
+			// DISABLE IT FOR JAR CREATION
+
+			// reader = new BufferedReader(new
+			// FileReader(this.getClass().getClassLoader().getResource(filesFn).getFile()));
+			reader = new BufferedReader(new FileReader(filesFn));
 			files = new ArrayList<List<String>>();
 
 			reader.readLine(); // skip header
@@ -69,20 +83,20 @@ public class AuditReporter {
 
 	private String printUserHeader(String userName) {
 
-		return "## User: " + userName;
+		return "## User: " + userName + NEW_LINE_SEPARATOR;
 	}
 
 	private String printFile(String fileName, long fileSize) {
-		return "* " + fileName + " ==> " + fileSize + " bytes";
+		return "* " + fileName + " ==> " + fileSize + " bytes" + NEW_LINE_SEPARATOR;
 	}
 
 	// sorts the files list
 	private void calculateTopN() {
 
 		List<String> tmp;
-		for (int i = 0; i < (files.size() ); i++) {
+		for (int i = 0; i < (files.size()); i++) {
 			long size = Long.parseLong(files.get(i).get(1));
-			for (int y = 0; y < (files.size() ); y++) {
+			for (int y = 0; y < (files.size()); y++) {
 				long size2 = Long.parseLong(files.get(y).get(1));
 				if (size < size2) {
 					tmp = files.get(y);
@@ -101,11 +115,11 @@ public class AuditReporter {
 	public void sort() {
 
 		int tmp;
-		int[] myArray = { 5, 3, 2, 11, 1, 6,21,4 };
+		int[] myArray = { 5, 3, 2, 11, 1, 6, 21, 4 };
 
-		for (int i = 0; i < (myArray.length ); i++) {
+		for (int i = 0; i < (myArray.length); i++) {
 			int size = myArray[i];
-			for (int y = 0; y < (myArray.length ); y++) {
+			for (int y = 0; y < (myArray.length); y++) {
 				int size2 = myArray[y];
 				if (size < size2) {
 					tmp = myArray[y];
@@ -133,48 +147,109 @@ public class AuditReporter {
 		// System.out.println("Top N method was called with variable number: " +
 		// topNNumber);
 
-		result.append("Top #3 Report");
+		result.append("Top #" + topNNumber + " Report");
 		result.append(NEW_LINE_SEPARATOR);
 		result.append("=============");
 		result.append(NEW_LINE_SEPARATOR);
 
-		
-/*
 		for (int i = 0; i < topNNumber; i++) {
 			List<String> fileRow = files.get(i);
 			String fileName = fileRow.get(2);
 
 			long ownerUserId = Long.parseLong(fileRow.get(3));
-			
+
 			long size = Long.parseLong(fileRow.get(1));
-			result.append(printFile(fileName, size));
+			result.append("* " + fileName + " ==> ");
 
 			for (List<String> userRow : users) {
 				String userName = userRow.get(1);
 				long userId = Long.parseLong(userRow.get(0));
-				
-				if (ownerUserId == userId) {
-					result.append(printUserHeader(userName));
-				}
-				result.append(NEW_LINE_SEPARATOR);
-			}
-		}*/
 
-		
-		for(int i=0;i<topNNumber;i++){
-			result.append(files.get(i).get(1));
-			result.append(COMMA_DELIMITER);
-			result.append(files.get(i).get(2));
+				if (ownerUserId == userId) {
+					result.append(" user " + userName + COMMA_DELIMITER);
+				}
+
+			}
+			result.append(" " + size + " bytes");
 			result.append(NEW_LINE_SEPARATOR);
 		}
-		
-		
+
 		return result.toString();
 
 	}
 
+	protected void topNCSVOutput(int topNNumber) throws Exception {
+
+		// CSV Related
+		CSVWriter myWriter = new CSVWriter();
+		List<String[]> result = new ArrayList<String[]>();
+		String[] entry;
+
+		if (topNNumber > files.size()) {
+			throw new Exception("Top N Number Too Big, Larger Than the Number of Files");
+		}
+
+		calculateTopN();
+
+		for (int i = 0; i < topNNumber; i++) {
+
+			List<String> fileRow = files.get(i);
+			String fileName = fileRow.get(2);
+
+			long ownerUserId = Long.parseLong(fileRow.get(3));
+
+			long size = Long.parseLong(fileRow.get(1));
+
+			for (List<String> userRow : users) {
+				String userName = userRow.get(1);
+				long userId = Long.parseLong(userRow.get(0));
+
+				if (ownerUserId == userId) {
+					entry = new String[variableNumber];
+					entry[0] = fileName;
+					entry[1] = userName;
+					entry[2] = Long.toString(size);
+					result.add(entry);
+				}
+
+			}
+
+		}
+
+		myWriter.writeToFile("topNandCOptionResult", result);
+
+	}
+
 	protected void csvOutput() {
-		System.out.println("CSV Output Method was called");
+		CSVWriter myWriter = new CSVWriter();
+
+		List<String[]> result = new ArrayList<String[]>();
+		String[] entry;
+
+		for (List<String> userRow : users) {
+
+			long userId = Long.parseLong(userRow.get(0));
+			String userName = userRow.get(1);
+
+			for (List<String> fileRow : files) {
+
+				long size = Long.parseLong(fileRow.get(1));
+				String fileName = fileRow.get(2);
+				long ownerUserId = Long.parseLong(fileRow.get(3));
+				if (ownerUserId == userId) {
+					entry = new String[variableNumber];
+					entry[0] = userName;
+					entry[1] = fileName;
+					entry[2] = Long.toString(size);
+					result.add(entry);
+				}
+
+			}
+
+		}
+
+		myWriter.writeToFile("cOptionResult", result);
+
 	}
 
 	// prints the given output to the screen
@@ -189,30 +264,40 @@ public class AuditReporter {
 		StringBuilder result = new StringBuilder();
 
 		result.append(printHeader());
-		for (List<String> userRow : users) {
-			long userId = Long.parseLong(userRow.get(0));
-			String userName = userRow.get(1);
+		try {
+			for (List<String> userRow : users) {
+				long userId = Long.parseLong(userRow.get(0));
+				String userName = userRow.get(1);
 
-			result.append(printUserHeader(userName));
-			result.append(NEW_LINE_SEPARATOR);
-			for (List<String> fileRow : files) {
-				String fileId = fileRow.get(0);
-				long size = Long.parseLong(fileRow.get(1));
-				String fileName = fileRow.get(2);
-				long ownerUserId = Long.parseLong(fileRow.get(3));
-				if (ownerUserId == userId) {
-					result.append(printFile(fileName, size));
-					result.append(NEW_LINE_SEPARATOR);
+				result.append(printUserHeader(userName));
+
+				for (List<String> fileRow : files) {
+					String fileId = fileRow.get(0);
+					long size = Long.parseLong(fileRow.get(1));
+					String fileName = fileRow.get(2);
+					long ownerUserId = Long.parseLong(fileRow.get(3));
+					if (ownerUserId == userId) {
+						result.append(printFile(fileName, size));
+
+					}
+
 				}
-				result.append(NEW_LINE_SEPARATOR);
 			}
+		} catch (Exception e) {
+			System.err.println(
+					"Error reading data from the CSV Files, improperly formatted data or the order of files has been mixed");
+			System.exit(0);
 		}
 
 		return result.toString();
 	}
 
 	protected void printUsage() {
-		System.out.println("Usage is xx");
+		System.out.println("Usage Manual: ");
+		System.out.println("java -jar egnyte-1.0-jar-with-dependencies.jar users.csv files.csv --top 5 -c");
+		System.out.println("first 2 options should be users then files in that order");
+		System.out.println("Optional: --top N for sorting");
+		System.out.println("-c for csv output (always should be the last variable)");
 	}
 
 	// GETTERS AND SETTERS START HERE
