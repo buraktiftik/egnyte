@@ -1,90 +1,64 @@
 package com.egnyte.utils.auditreporter;
 
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 public class Runner {
 
-    private List<List<String>> users;
-    private List<List<String>> files;
+	public static void main(String[] args) throws IOException {
+		AuditReporter r = new AuditReporter();
 
-    public static void main(String[] args) throws IOException {
-        Runner r = new Runner();
-        r.loadData(args[0], args[1]);
-        r.run();
-    }
+		// argument handling
 
-    private void run() {
-        printHeader();
-        for (List<String> userRow : users) {
-            long userId = Long.parseLong(userRow.get(0));
-            String userName = userRow.get(1);
+		// improperly formatted inputs
+		if (args.length < 2 || args.length > 5) {
+			r.printUsage();
+		}
 
-            printUserHeader(userName);
-            for (List<String> fileRow : files) {
-                String fileId = fileRow.get(0);
-                long size = Long.parseLong(fileRow.get(1));
-                String fileName = fileRow.get(2);
-                long ownerUserId = Long.parseLong(fileRow.get(3));
-                if (ownerUserId == userId) {
-                    printFile(fileName, size);
-                }
-            }
-        }
-    }
+		// only 2 arguments
+		else if (args.length == 2) {
 
-    private void loadData(String userFn, String filesFn) throws IOException {
-        String line;
+			r.loadData(args[0], args[1]);
+			r.screenOutput(r.generateOutput());
+		}
 
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new FileReader(userFn));
-            users = new ArrayList<List<String>>();
+		// just csv file output
+		else if (args.length == 3 && args[(args.length - 1)].equals("c")) {
+			r.csvOutput();
+		}
 
-            reader.readLine(); // skip header
+		// top N output to screen
+		else if (args.length == 4 && args[2].equals("-top")) {
+			try {
+				r.topN(Integer.parseInt(args[3]));
+			} catch (Exception e) {
+				System.out.println("The input is improperly formatted");
+				r.printUsage();
+				e.printStackTrace();
+			} finally {
+				System.exit(0);
+			}
+		}
 
-            while ((line = reader.readLine()) != null) {
-                users.add(Arrays.asList(line.split(",")));
-            }
-        } finally {
-            if (reader != null) {
-                reader.close();
-            }
-        }
+		// top N output to csv file
+		else if (args.length == 5 && args[2].equals("-top") && args[(args.length - 1)].equals("c")) {
+			try {
+				r.topN(Integer.parseInt(args[3]));
+			} catch (Exception e) {
+				System.out.println("The input is improperly formatted, the problem seems at: " + e.getMessage());
+				r.printUsage();
+				e.printStackTrace();
+			} finally {
+				System.exit(0);
+			}
+			r.csvOutput();
+		}
 
-        reader = null;
-        try {
-            reader = new BufferedReader(new FileReader(filesFn));
-            files = new ArrayList<List<String>>();
-
-            reader.readLine(); // skip header
-
-            while ((line = reader.readLine()) != null) {
-                files.add(Arrays.asList(line.split(",")));
-            }
-        } finally {
-            if (reader != null) {
-                reader.close();
-            }
-        }
-    }
-
-    private void printHeader() {
-        System.out.println("Audit Report");
-        System.out.println("============");
-    }
-
-    private void printUserHeader(String userName) {
-        System.out.println("## User: " + userName);
-    }
-
-    private void printFile(String fileName, long fileSize) {
-        System.out.println("* " + fileName + " ==> " + fileSize + " bytes");
-    }
+	}
 
 }
