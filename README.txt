@@ -1,3 +1,5 @@
+Author: Burak Tiftik
+
 Assumption: The example csv files had headers, but the expected outputs did not, thus it is assumed the outputs do not
 require headers
 
@@ -40,7 +42,7 @@ in the future) for better modularity
 
 Setters and Getters has been generated to allow for testing for files and users fields in AuditReporter
 
-If the TOP N order is executed with too high value the program should throw and exception
+If the TOP N order is executed with too high value the program should throw an exception
 
 For Maven built fat jar file the input for files must be in the same folder or given appropriate path
 For testing in eclipse change the code in AuditReporter.java loadData method (indicated with caps comments), this will
@@ -51,7 +53,8 @@ The code should be more error resistant, various improper input problems have be
 
 Tests:
 
-Basic creation tests are created called AuditReporterCreationTest 
+Basic creation tests are created called AuditReporterTest
+Additional tests created including Exception Testing 
 
 
 
@@ -62,3 +65,5 @@ Can be built easily with Maven
 I will also upload a fatjar file to the github, as well as pretty much anything I have on my folder just to be extra sure
 
 Fatjar file should read the input files in the same folder or with appropriate path (similar to example code)
+
+egnyte-1.0-jar-with-dependencies.jar is the name of the fat-jar file. It is in the target folder.

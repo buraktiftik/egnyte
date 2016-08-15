@@ -90,7 +90,7 @@ public class AuditReporter {
 		return "* " + fileName + " ==> " + fileSize + " bytes" + NEW_LINE_SEPARATOR;
 	}
 
-	// sorts the files list
+	// sorts the files list, from largest to smallest
 	private void calculateTopN() {
 
 		List<String> tmp;
@@ -111,30 +111,7 @@ public class AuditReporter {
 
 	}
 
-	// DELETE THIS
-	public void sort() {
-
-		int tmp;
-		int[] myArray = { 5, 3, 2, 11, 1, 6, 21, 4 };
-
-		for (int i = 0; i < (myArray.length); i++) {
-			int size = myArray[i];
-			for (int y = 0; y < (myArray.length); y++) {
-				int size2 = myArray[y];
-				if (size < size2) {
-					tmp = myArray[y];
-					myArray[y] = myArray[i];
-					myArray[i] = tmp;
-
-				}
-			}
-
-		}
-		for (int i : myArray) {
-			System.out.println(i);
-		}
-	}
-
+	// method that gets the Top N files
 	protected String topN(int topNNumber) throws Exception {
 
 		if (topNNumber > files.size()) {
@@ -144,8 +121,6 @@ public class AuditReporter {
 		calculateTopN();
 
 		StringBuilder result = new StringBuilder();
-		// System.out.println("Top N method was called with variable number: " +
-		// topNNumber);
 
 		result.append("Top #" + topNNumber + " Report");
 		result.append(NEW_LINE_SEPARATOR);
@@ -178,6 +153,7 @@ public class AuditReporter {
 
 	}
 
+	// Top N CSV output method
 	protected void topNCSVOutput(int topNNumber) throws Exception {
 
 		// CSV Related
@@ -220,6 +196,7 @@ public class AuditReporter {
 
 	}
 
+	// the regular csv output method
 	protected void csvOutput() {
 		CSVWriter myWriter = new CSVWriter();
 
@@ -292,6 +269,7 @@ public class AuditReporter {
 		return result.toString();
 	}
 
+	// prints the proper usage if the arguments were not correct
 	protected void printUsage() {
 		System.out.println("Usage Manual: ");
 		System.out.println("java -jar egnyte-1.0-jar-with-dependencies.jar users.csv files.csv --top 5 -c");

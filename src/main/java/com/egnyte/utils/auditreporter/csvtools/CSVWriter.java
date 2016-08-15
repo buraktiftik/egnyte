@@ -8,7 +8,6 @@ public class CSVWriter {
 
 	private static final String COMMA_DELIMITER = ",";
 	private static final String NEW_LINE_SEPARATOR = "\n";
-	//private static final String header = "_id,name,type,latitude,longitude";
 
 	private static final int variableNumber = 3;
 
@@ -18,11 +17,6 @@ public class CSVWriter {
 
 		try {
 			myWriter = new FileWriter(fileName + ".csv");
-
-			//myWriter.append(header);
-			//myWriter.append(NEW_LINE_SEPARATOR);
-
-			// write data here
 
 			Iterator<String[]> myItr = data.iterator();
 
@@ -52,6 +46,7 @@ public class CSVWriter {
 			} catch (Exception e) {
 				System.out.println("Error detected in closing the File Writer");
 				e.printStackTrace();
+				System.exit(0);
 			}
 
 		}
